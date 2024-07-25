@@ -1,5 +1,3 @@
-// pages/api/check-sessions.ts
-
 import { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
@@ -16,9 +14,10 @@ const checkSessions = async () => {
   const blacklist = readBlacklist();
   const session = await getSession(); // Tek bir oturum nesnesi döndürür
 
-  if (session && blacklist.includes(session.user.email)) {
+  if (session && session.user && blacklist.includes(session.user.email)) {
     // Oturumu geçersiz kılma işlemini burada yapabilirsiniz
     // Bu, oturumu kapatma ve kullanıcıyı oturumdan çıkarma işlemini içerebilir
+    console.log(`User ${session.user.email} is in blacklist, signing out.`);
   }
 };
 
