@@ -71,9 +71,9 @@ export const { auth, signIn, signOut } = NextAuth({
       const { blacklist } = await fetchJsonData();
 
       if (blacklist.includes(token.email)) {
-        return null;
+        // Kullanıcıyı oturumdan çıkarmak için session.user'ı boş bir nesne ile güncelleyin
+        session.user = { name: '', email: '', image: '' };
       }
-      session.user = token;
       return session;
     },
     async jwt(token, user) {
