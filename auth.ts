@@ -6,23 +6,7 @@ import { authConfig } from './auth.config'
 import { z } from 'zod'
 import { getStringFromBuffer } from './lib/utils'
 import { getUser } from './app/login/actions'
-import fs from 'fs'
-import path from 'path'
-
-// JSON dosyalarının yollarını belirleyin
-const allowedEmailsPath = path.join(process.cwd(), 'data', 'allowedEmails.json')
-const blacklistPath = path.join(process.cwd(), 'data', 'sessionBlacklist.json')
-
-// JSON dosyalarını okuma fonksiyonları
-const readAllowedEmails = () => {
-  const jsonData = fs.readFileSync(allowedEmailsPath, 'utf-8')
-  return JSON.parse(jsonData)
-}
-
-const readBlacklist = () => {
-  const jsonData = fs.readFileSync(blacklistPath, 'utf-8')
-  return JSON.parse(jsonData)
-}
+import { readAllowedEmails, readBlacklist } from './lib/jsonUtils'
 
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -39,13 +23,12 @@ export const { auth, signIn, signOut } = NextAuth({
         if (parsedCredentials.success) {
           const { email, password } = parsedCredentials.data
 
-          // E-posta izin listesinde mi kontrol et
+          // Sunucu tarafında e-posta izin listesi ve kara liste kontrolü yapın
           const allowedEmails = readAllowedEmails()
           if (!allowedEmails.includes(email)) {
             throw new Error('Bu e-posta adresi kayıt için izinli değil.')
           }
 
-          // Kara listede mi kontrol et
           const blacklist = readBlacklist()
           if (blacklist.includes(email)) {
             throw new Error('Bu kullanıcı oturum açamaz.')
@@ -76,12 +59,11 @@ export const { auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async session(session, token) {
+      // Sunucu tarafında e-posta izin listesi ve kara liste kontrolü yapın
       const blacklist = readBlacklist()
-
       if (blacklist.includes(token.email)) {
         return null
       }
-
       session.user = token
       return session
     },
