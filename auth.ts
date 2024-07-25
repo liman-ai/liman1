@@ -72,7 +72,7 @@ export const { auth, signIn, signOut } = NextAuth({
 
       if (blacklist.includes(token.email)) {
         // Kullanıcıyı oturumdan çıkarmak için session.user'ı boş bir nesne ile güncelleyin
-        session.user = { name: '', email: '', image: '' };
+        session.user = { id: '', name: '', email: '', image: '' };
       }
       return session;
     },
