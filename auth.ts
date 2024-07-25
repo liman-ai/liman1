@@ -1,12 +1,24 @@
-// auth.ts
-
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import { authConfig } from './auth.config'
 import { z } from 'zod'
 import { getStringFromBuffer } from './lib/utils'
 import { getUser } from './app/login/actions'
-import { readAllowedEmails, readBlacklist } from './lib/jsonUtils'
+import fs from 'fs'
+import path from 'path'
+
+const allowedEmailsPath = path.join(process.cwd(), 'data', 'allowedEmails.json')
+const blacklistPath = path.join(process.cwd(), 'data', 'sessionBlacklist.json')
+
+const readAllowedEmails = () => {
+  const jsonData = fs.readFileSync(allowedEmailsPath, 'utf-8')
+  return JSON.parse(jsonData)
+}
+
+const readBlacklist = () => {
+  const jsonData = fs.readFileSync(blacklistPath, 'utf-8')
+  return JSON.parse(jsonData)
+}
 
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
