@@ -1,9 +1,28 @@
+// auth.ts
+
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import { authConfig } from './auth.config'
 import { z } from 'zod'
 import { getStringFromBuffer } from './lib/utils'
 import { getUser } from './app/login/actions'
+import fs from 'fs'
+import path from 'path'
+
+// JSON dosyalarının yollarını belirleyin
+const allowedEmailsPath = path.join(process.cwd(), 'data', 'allowedEmails.json')
+const blacklistPath = path.join(process.cwd(), 'data', 'sessionBlacklist.json')
+
+// JSON dosyalarını okuma fonksiyonları
+const readAllowedEmails = () => {
+  const jsonData = fs.readFileSync(allowedEmailsPath, 'utf-8')
+  return JSON.parse(jsonData)
+}
+
+const readBlacklist = () => {
+  const jsonData = fs.readFileSync(blacklistPath, 'utf-8')
+  return JSON.parse(jsonData)
+}
 
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -19,6 +38,19 @@ export const { auth, signIn, signOut } = NextAuth({
 
         if (parsedCredentials.success) {
           const { email, password } = parsedCredentials.data
+
+          // E-posta izin listesinde mi kontrol et
+          const allowedEmails = readAllowedEmails()
+          if (!allowedEmails.includes(email)) {
+            throw new Error('Bu e-posta adresi kayıt için izinli değil.')
+          }
+
+          // Kara listede mi kontrol et
+          const blacklist = readBlacklist()
+          if (blacklist.includes(email)) {
+            throw new Error('Bu kullanıcı oturum açamaz.')
+          }
+
           const user = await getUser(email)
 
           if (!user) return null
@@ -41,5 +73,30 @@ export const { auth, signIn, signOut } = NextAuth({
         return null
       }
     })
-  ]
+  ],
+  callbacks: {
+    async session(session, token) {
+      const blacklist = readBlacklist()
+
+      if (blacklist.includes(token.email)) {
+        return null
+      }
+
+      session.user = token
+      return session
+    },
+    async jwt(token, user) {
+      if (user) {
+        token.id = user.id
+        token.email = user.email
+      }
+      return token
+    }
+  },
+  session: {
+    jwt: true,
+  },
+  jwt: {
+    secret: process.env.JWT_SECRET,
+  },
 })
