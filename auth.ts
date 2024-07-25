@@ -86,7 +86,7 @@ export const { auth, signIn, signOut } = NextAuth({
     }
   },
   session: {
-    jwt: true,
+    strategy: 'jwt', // Bu satırı düzeltin
   },
   jwt: {
     secret: process.env.JWT_SECRET,
