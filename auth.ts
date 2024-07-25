@@ -4,7 +4,7 @@ import { authConfig } from './auth.config'
 import { z } from 'zod'
 import { getStringFromBuffer } from './lib/utils'
 import { getUser } from './app/login/actions'
-
+import { readAllowedEmails, readBlacklist } from './lib/jsonUtils'; 
 
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
