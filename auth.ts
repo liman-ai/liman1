@@ -6,6 +6,7 @@ import { authConfig } from './auth.config';
 import { z } from 'zod';
 import { getStringFromBuffer } from './lib/utils';
 import { getUser } from './app/login/actions';
+import { readAllowedEmails, readBlacklist } from './lib/jsonUtils';
 
 async function fetchJsonData() {
   const res = await fetch('http://localhost:3000/api/read-json');
@@ -76,7 +77,7 @@ export const { auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
-    async jwt(token, user) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.email = user.email;
