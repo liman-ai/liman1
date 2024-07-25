@@ -66,7 +66,7 @@ export const { auth, signIn, signOut } = NextAuth({
     })
   ],
   callbacks: {
-    async session(session, token) {
+    async session({ session, token }) {
       // JSON verilerini API route'dan çekin
       const { blacklist } = await fetchJsonData();
 
