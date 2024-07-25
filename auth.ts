@@ -1,10 +1,20 @@
-import NextAuth from 'next-auth'
-import Credentials from 'next-auth/providers/credentials'
-import { authConfig } from './auth.config'
-import { z } from 'zod'
-import { getStringFromBuffer } from './lib/utils'
-import { getUser } from './app/login/actions'
-import { readAllowedEmails, readBlacklist } from './lib/jsonUtils'; 
+// auth.ts
+
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import { authConfig } from './auth.config';
+import { z } from 'zod';
+import { getStringFromBuffer } from './lib/utils';
+import { getUser } from './app/login/actions';
+
+async function fetchJsonData() {
+  const res = await fetch('http://localhost:3000/api/read-json');
+  if (!res.ok) {
+    throw new Error('Failed to fetch JSON data');
+  }
+  const data = await res.json();
+  return data;
+}
 
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -16,61 +26,62 @@ export const { auth, signIn, signOut } = NextAuth({
             email: z.string().email(),
             password: z.string().min(6)
           })
-          .safeParse(credentials)
+          .safeParse(credentials);
 
         if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data
+          const { email, password } = parsedCredentials.data;
 
-          // Sunucu tarafında e-posta izin listesi ve kara liste kontrolü yapın
-          const allowedEmails = readAllowedEmails()
+          // JSON verilerini API route'dan çekin
+          const { allowedEmails, blacklist } = await fetchJsonData();
+
           if (!allowedEmails.includes(email)) {
-            throw new Error('Bu e-posta adresi kayıt için izinli değil.')
+            throw new Error('Bu e-posta adresi kayıt için izinli değil.');
           }
 
-          const blacklist = readBlacklist()
           if (blacklist.includes(email)) {
-            throw new Error('Bu kullanıcı oturum açamaz.')
+            throw new Error('Bu kullanıcı oturum açamaz.');
           }
 
-          const user = await getUser(email)
+          const user = await getUser(email);
 
-          if (!user) return null
+          if (!user) return null;
 
-          const encoder = new TextEncoder()
-          const saltedPassword = encoder.encode(password + user.salt)
+          const encoder = new TextEncoder();
+          const saltedPassword = encoder.encode(password + user.salt);
           const hashedPasswordBuffer = await crypto.subtle.digest(
             'SHA-256',
             saltedPassword
-          )
-          const hashedPassword = getStringFromBuffer(hashedPasswordBuffer)
+          );
+          const hashedPassword = getStringFromBuffer(hashedPasswordBuffer);
 
           if (hashedPassword === user.password) {
-            return user
+            return user;
           } else {
-            return null
+            return null;
           }
         }
 
-        return null
+        return null;
       }
     })
   ],
   callbacks: {
     async session(session, token) {
-      // Sunucu tarafında e-posta izin listesi ve kara liste kontrolü yapın
-      const blacklist = readBlacklist()
+      // JSON verilerini API route'dan çekin
+      const { blacklist } = await fetchJsonData();
+
       if (blacklist.includes(token.email)) {
-        return null
+        return null;
       }
-      session.user = token
-      return session
+      session.user = token;
+      return session;
     },
     async jwt(token, user) {
       if (user) {
-        token.id = user.id
-        token.email = user.email
+        token.id = user.id;
+        token.email = user.email;
       }
-      return token
+      return token;
     }
   },
   session: {
@@ -79,4 +90,4 @@ export const { auth, signIn, signOut } = NextAuth({
   jwt: {
     secret: process.env.JWT_SECRET,
   },
-})
+});
