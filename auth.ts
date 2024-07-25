@@ -86,9 +86,7 @@ export const { auth, signIn, signOut } = NextAuth({
     }
   },
   session: {
-    strategy: 'jwt', // Bu satırı düzeltin
+    strategy: 'jwt',
   },
-  jwt: {
-    secret: process.env.JWT_SECRET,
-  },
+  secret: process.env.JWT_SECRET, // Bu satırı buraya taşıyın
 });
