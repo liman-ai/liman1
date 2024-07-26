@@ -21,6 +21,7 @@ async function fetchJsonData() {
 
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  secret: process.env.JWT_SECRET, // Bu satırı buraya taşıyın
   providers: [
     Credentials({
       async authorize(credentials) {
@@ -89,6 +90,5 @@ export const { auth, signIn, signOut } = NextAuth({
   },
   session: {
     strategy: 'jwt',
-  },
-  secret: process.env.JWT_SECRET, // Bu satırı buraya taşıyın
+  }
 });
