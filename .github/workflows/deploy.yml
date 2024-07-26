@@ -21,7 +21,7 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      - name: Install dependencies
+      - name: Install dependencies without frozen lockfile
         run: pnpm install --no-frozen-lockfile
 
       - name: Commit updated pnpm-lock.yaml
@@ -41,6 +41,9 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
+
+      - name: Install dependencies with frozen lockfile
+        run: pnpm install
 
       - name: Deploy to Vercel
         run: vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
