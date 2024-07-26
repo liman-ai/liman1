@@ -10,7 +10,11 @@ const readJsonFile = (filePath: string) => {
     const jsonData = fs.readFileSync(filePath, 'utf-8');
     return JSON.parse(jsonData);
   } catch (error) {
-    throw new Error(`Error reading JSON file at ${filePath}: ${error.message}`);
+    if (error instanceof Error) {
+      throw new Error(`Error reading JSON file at ${filePath}: ${error.message}`);
+    } else {
+      throw new Error(`Error reading JSON file at ${filePath}: Unknown error`);
+    }
   }
 };
 
@@ -21,6 +25,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     res.status(200).json({ allowedEmails, blacklist });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    if (error instanceof Error) {
+      res.status(500).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: 'Unknown error' });
+    }
   }
 }
