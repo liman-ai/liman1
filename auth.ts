@@ -7,7 +7,6 @@ import { z } from 'zod';
 import { getStringFromBuffer } from './lib/utils';
 import { getUser } from './app/login/actions';
 import { readAllowedEmails, readBlacklist } from './lib/jsonUtils';
-import { getUserByEmail, updateUserPassword } from './lib/user-actions';
 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -20,33 +19,6 @@ async function fetchJsonData() {
   const data = await res.json();
   return data;
 }
-
-async function changePassword(email: string, currentPassword: string, newPassword: string) {
-  const user = await getUserByEmail(email);
-
-  if (!user) {
-    throw new Error('User not found');
-  }
-
-  const encoder = new TextEncoder();
-  const saltedCurrentPassword = encoder.encode(currentPassword + user.salt);
-  const hashedCurrentPasswordBuffer = await crypto.subtle.digest('SHA-256', saltedCurrentPassword);
-  const hashedCurrentPassword = Buffer.from(hashedCurrentPasswordBuffer).toString('hex');
-
-  if (hashedCurrentPassword !== user.password) {
-    throw new Error('Incorrect current password');
-  }
-
-  const saltedNewPassword = encoder.encode(newPassword + user.salt);
-  const hashedNewPasswordBuffer = await crypto.subtle.digest('SHA-256', saltedNewPassword);
-  const hashedNewPassword = Buffer.from(hashedNewPasswordBuffer).toString('hex');
-
-  await updateUserPassword(email, hashedNewPassword);
-
-  return 'Password updated successfully';
-}
-
-
 
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
