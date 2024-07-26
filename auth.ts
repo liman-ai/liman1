@@ -47,6 +47,7 @@ async function changePassword(email: string, currentPassword: string, newPasswor
 }
 
 
+
 export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
   secret: process.env.JWT_SECRET, // Bu satırı buraya taşıyın
