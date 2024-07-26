@@ -1,9 +1,11 @@
 import fs from 'fs';
 import path from 'path';
 import { promisify } from 'util';
-import { users } from '@/data/users'; // Örnek kullanıcı verileri için
 
 const writeFile = promisify(fs.writeFile);
+
+const usersFilePath = path.join(process.cwd(), 'data', 'users.json');
+const users = JSON.parse(fs.readFileSync(usersFilePath, 'utf-8'));
 
 export const getUser = async (email: string) => {
   return users.find(user => user.email === email);
@@ -35,6 +37,5 @@ export const updateUserPassword = async (email: string, newPassword: string) => 
   }
 
   users[userIndex].password = newPassword;
-  const filePath = path.join(process.cwd(), 'data', 'users.json');
-  await writeFile(filePath, JSON.stringify(users));
+  await writeFile(usersFilePath, JSON.stringify(users));
 };
