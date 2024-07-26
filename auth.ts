@@ -8,8 +8,10 @@ import { getStringFromBuffer } from './lib/utils';
 import { getUser } from './app/login/actions';
 import { readAllowedEmails, readBlacklist } from './lib/jsonUtils';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 async function fetchJsonData() {
-  const res = await fetch('http://localhost:3000/api/read-json');
+  const res = await fetch(`${API_URL}/api/read-json`);
   if (!res.ok) {
     throw new Error('Failed to fetch JSON data');
   }
