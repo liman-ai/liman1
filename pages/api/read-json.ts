@@ -1,11 +1,26 @@
-// pages/api/read-json.ts
-
 import { NextApiRequest, NextApiResponse } from 'next';
-import { readAllowedEmails, readBlacklist } from '../../lib/jsonUtils';
+import fs from 'fs';
+import path from 'path';
+
+const allowedEmailsPath = path.join(process.cwd(), 'data', 'allowedEmails.json');
+const blacklistPath = path.join(process.cwd(), 'data', 'sessionBlacklist.json');
+
+const readJsonFile = (filePath: string) => {
+  try {
+    const jsonData = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(jsonData);
+  } catch (error) {
+    throw new Error(`Error reading JSON file at ${filePath}: ${error.message}`);
+  }
+};
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  const allowedEmails = readAllowedEmails();
-  const blacklist = readBlacklist();
+  try {
+    const allowedEmails = readJsonFile(allowedEmailsPath);
+    const blacklist = readJsonFile(blacklistPath);
 
-  res.status(200).json({ allowedEmails, blacklist });
+    res.status(200).json({ allowedEmails, blacklist });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 }
