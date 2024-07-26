@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getSession } from 'next-auth/react';
-import { getUserByEmail, updateUserPassword } from '../../lib/user';
+import { getUser, updateUserPassword } from './user-actions'; // user-actions içinde yeni fonksiyonlar tanımlanacak
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: 'Current password and new password are required' });
   }
 
-  const user = await getUserByEmail(session.user.email);
+  const user = await getUser(session.user.email);
 
   if (!user) {
     return res.status(404).json({ message: 'User not found' });
