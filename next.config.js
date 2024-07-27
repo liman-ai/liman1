@@ -8,7 +8,6 @@ module.exports = {
         crypto: false,
       }
     }
-
     return config
   },
 }
