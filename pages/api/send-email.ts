@@ -1,3 +1,4 @@
+// pages/api/send-email.ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import nodemailer from 'nodemailer';
 
@@ -21,15 +22,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       html: `<p>Sign in to <strong>${new URL(url).host}</strong></p><p><a href="${url}">Sign in</a></p>`,
     };
 
-    transporter.sendMail(message, (error, info) => {
-      if (error) {
-        console.error('Error sending email:', error);
-        return res.status(500).json({ error: 'Error sending email' });
-      } else {
-        console.log('Email sent:', info.response);
-        return res.status(200).json({ message: 'Email sent' });
-      }
-    });
+    try {
+      await transporter.sendMail(message);
+      res.status(200).json({ message: 'Email sent' });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      res.status(500).json({ error: 'Error sending email' });
+    }
   } else {
     res.status(405).json({ error: 'Method not allowed' });
   }
