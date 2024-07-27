@@ -1,4 +1,3 @@
-// auth.config.ts
 import type { NextAuthOptions } from 'next-auth';
 import EmailProvider from 'next-auth/providers/email';
 
@@ -11,7 +10,7 @@ export const sendVerificationRequest = async ({
   url: string;
   provider: { server: string; from: string };
 }) => {
-  const response = await fetch(`${process.env.NEXTAUTH_URL}/api/send-email`, {
+  const response = await fetch('/api/send-email', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
