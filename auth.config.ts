@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import type { NextAuthConfig } from 'next-auth';
+import type { NextAuthOptions } from 'next-auth';
 import EmailProvider from 'next-auth/providers/email';
 
 // Nodemailer transport yapılandırması
@@ -39,11 +39,11 @@ export const sendVerificationRequest = ({
 };
 
 // NextAuth.js yapılandırması
-export const authConfig: NextAuthConfig = {
+export const authOptions: NextAuthOptions = {
   secret: process.env.AUTH_SECRET,
   pages: {
     signIn: '/login',
-    newUser: '/signup'
+    newUser: '/signup',
   },
   callbacks: {
     async authorized({ auth, request: { nextUrl } }) {
