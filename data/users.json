@@ -1,12 +1,1 @@
-[
-  {
-    "email": "user1@example.com",
-    "password": "hashedpassword1",
-    "salt": "randomsalt1"
-  },
-  {
-    "email": "user2@example.com",
-    "password": "hashedpassword2",
-    "salt": "randomsalt2"
-  }
-]
+
