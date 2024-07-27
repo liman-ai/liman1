@@ -1,7 +1,6 @@
 import type { NextAuthOptions } from 'next-auth';
 import EmailProvider from 'next-auth/providers/email';
 
-// E-posta doğrulama isteği gönderme fonksiyonu
 export const sendVerificationRequest = async ({
   identifier: email,
   url,
@@ -17,10 +16,10 @@ export const sendVerificationRequest = async ({
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ email, url, from }),
-  })
+  });
 
   if (!response.ok) {
-    console.error('Error sending email:', await response.text())
+    console.error('Error sending email:', await response.text());
   }
 };
 
@@ -31,50 +30,32 @@ export const authOptions: NextAuthOptions = {
     signIn: '/login',
     newUser: '/signup',
   },
+  providers: [
+    EmailProvider({
+      server: {
+        host: "smtp.gmail.com",
+        port: 587,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      },
+      from: process.env.EMAIL_FROM,
+      sendVerificationRequest,
+    }),
+  ],
   callbacks: {
-    async authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user;
-      const isOnLoginPage = nextUrl.pathname.startsWith('/login');
-      const isOnSignupPage = nextUrl.pathname.startsWith('/signup');
-
-      if (isLoggedIn) {
-        if (isOnLoginPage || isOnSignupPage) {
-          return Response.redirect(new URL('/', nextUrl));
-        }
-      }
-
-      return true;
-    },
     async jwt({ token, user }) {
       if (user) {
-        token = { ...token, id: user.id };
+        token.id = user.id;
       }
-
       return token;
     },
     async session({ session, token }) {
       if (token) {
-        const { id } = token as { id: string };
-        const { user } = session;
-
-        session = { ...session, user: { ...user, id } };
+        session.user.id = token.id;
       }
-
       return session;
-    }
+    },
   },
-  providers: [
-    EmailProvider({
-      server: {
-        host: "smtp.gmail.com", // SMTP sunucusu
-        port: 587, // Port numarası
-        auth: {
-          user: process.env.EMAIL_USER, // .env dosyasındaki EMAIL_USER
-          pass: process.env.EMAIL_PASS, // .env dosyasındaki EMAIL_PASS
-        },
-      },
-      from: process.env.EMAIL_FROM, // Gönderen e-posta adresi
-      sendVerificationRequest, // E-posta doğrulama isteği gönderme fonksiyonu
-    }),
-  ]
 };
