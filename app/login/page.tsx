@@ -14,7 +14,7 @@ export default async function LoginPage() {
     <main className="flex flex-col p-4">
       <LoginForm />
       <div className="mt-4">
-        <a href="/auth/reset-password" className="text-blue-500 hover:underline">
+        <a href="pages/api/auth/reset-password" className="text-blue-500 hover:underline">
           Parolamı Unuttum
         </a>
       </div>
