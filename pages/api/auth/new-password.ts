@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await kv.del(`reset-token:${token}`)
 
     return res.status(200).json({ message: 'Password has been reset' })
+  } else {
+    res.status(405).json({ error: 'Method not allowed' })
   }
-
-  res.status(405).json({ error: 'Method not allowed' })
 }
