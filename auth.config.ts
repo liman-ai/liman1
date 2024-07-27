@@ -1,3 +1,4 @@
+// auth.config.ts
 import type { NextAuthOptions } from 'next-auth';
 import EmailProvider from 'next-auth/providers/email';
 
@@ -23,7 +24,6 @@ export const sendVerificationRequest = async ({
   }
 };
 
-// NextAuth.js yapılandırması
 export const authOptions: NextAuthOptions = {
   secret: process.env.AUTH_SECRET,
   pages: {
