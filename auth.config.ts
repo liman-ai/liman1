@@ -32,8 +32,8 @@ export const authOptions: NextAuthOptions = {
   providers: [
     EmailProvider({
       server: {
-        host: "smtp.gmail.com",
-        port: 587,
+        host: process.env.EMAIL_SERVER_HOST,
+        port: parseInt(process.env.EMAIL_SERVER_PORT || '587'),
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASS,
