@@ -1,27 +1,40 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
-import { useRouter } from 'next/router'
-import React from 'react'
-import { useEnterSubmit } from 'hooks/useEnterSubmit'
-import { useActions } from 'hooks/useActions'
-import { useUIState } from 'hooks/useUIState'
-import { nanoid } from 'nanoid'
-import { UserMessage } from 'components/UserMessage'
-import { Button, Textarea, Tooltip, TooltipTrigger, TooltipContent } from 'components/ui'
+import * as React from 'react'
+import { useSession } from 'next-auth/react'  // Oturum kontrolü için eklendi
 
-interface PromptFormProps {
+import Textarea from 'react-textarea-autosize'
+
+import { useActions, useUIState } from 'ai/rsc'
+
+import { UserMessage } from './stocks/message'
+import { type AI } from '@/lib/chat/actions'
+import { Button } from '@/components/ui/button'
+import { IconArrowElbow, IconPlus } from '@/components/ui/icons'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@/components/ui/tooltip'
+import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
+import { nanoid } from 'nanoid'
+import { useRouter } from 'next/navigation'
+
+
+export function PromptForm({
+  input,
+  setInput
+}: {
   input: string
   setInput: (value: string) => void
-}
-
-export function PromptForm({ input, setInput }: PromptFormProps) {
-  const { data: session } = useSession()
+}) {
+  const { data: session } = useSession()  // Bu satır eklendi
   const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
+
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -32,23 +45,30 @@ export function PromptForm({ input, setInput }: PromptFormProps) {
   return (
     <form
       ref={formRef}
-      onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
+      onSubmit={async (e: any) => {
         e.preventDefault()
+
+        // Blur focus on mobile
         if (window.innerWidth < 600) {
-          e.currentTarget['message']?.blur()
+          e.target['message']?.blur()
         }
+
         const value = input.trim()
         setInput('')
         if (!value) return
-        setMessages((currentMessages) => [
+
+        // Optimistically add user message UI
+        setMessages(currentMessages => [
           ...currentMessages,
           {
             id: nanoid(),
             display: <UserMessage>{value}</UserMessage>
           }
         ])
+
+        // Submit and get response message
         const responseMessage = await submitUserMessage(value)
-        setMessages((currentMessages) => [...currentMessages, responseMessage])
+        setMessages(currentMessages => [...currentMessages, responseMessage])
       }}
     >
       <div className="relative flex max-h-60 w-full grow flex-col overflow-hidden bg-background px-8 sm:rounded-md sm:border sm:px-12">
@@ -81,13 +101,13 @@ export function PromptForm({ input, setInput }: PromptFormProps) {
           name="message"
           rows={1}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={!session}
+          onChange={e => setInput(e.target.value)}
+          disabled={!session}  // Bu satır eklendi
         />
         <div className="absolute right-0 top-[13px] sm:right-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button type="submit" size="icon" disabled={!session || input === ''}>
+              <Button type="submit" size="icon" disabled={input === ''}>
                 <IconArrowElbow />
                 <span className="sr-only">Send message</span>
               </Button>
