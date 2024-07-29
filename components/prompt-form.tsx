@@ -1,3 +1,5 @@
+'use client'
+
 import * as React from 'react'
 import Textarea from 'react-textarea-autosize'
 
@@ -15,7 +17,6 @@ import {
 import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'; // Eklenen satır
 
 export function PromptForm({
   input,
@@ -29,7 +30,6 @@ export function PromptForm({
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
-  const { data: session } = useSession(); // Eklenen satır
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -83,7 +83,6 @@ export function PromptForm({
           </TooltipTrigger>
           <TooltipContent>New Chat</TooltipContent>
         </Tooltip>
-        {session ? ( // Eklenen koşul
         <Textarea
           ref={inputRef}
           tabIndex={0}
@@ -99,21 +98,11 @@ export function PromptForm({
           value={input}
           onChange={e => setInput(e.target.value)}
         />
-        ) : ( // Eklenen koşul
-          <Textarea
-          ref={inputRef}
-          tabIndex={0}
-          onKeyDown={onKeyDown}
-          placeholder="Please log in to send a message." // Değiştirilen placeholder metni
-          className="min-h-[60px] w-full resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none sm:text-sm"
-          disabled // Bileşeni devre dışı bırakma
-          />
-        )}
         <div className="absolute right-0 top-[13px] sm:right-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button type="submit" size="icon" disabled={input === '' || !session}>
-                <IconArrowElbow /> 
+              <Button type="submit" size="icon" disabled={input === ''}>
+                <IconArrowElbow />
                 <span className="sr-only">Send message</span>
               </Button>
             </TooltipTrigger>
