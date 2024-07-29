@@ -1,7 +1,8 @@
 import type { NextAuthConfig } from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
 
 export const authConfig = {
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: '/login',
     newUser: '/signup'
@@ -38,5 +39,27 @@ export const authConfig = {
       return session
     }
   },
-  providers: []
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        username: { label: 'Username', type: 'text' },
+        password: { label: 'Password', type: 'password' }
+      },
+      authorize: async (credentials) => {
+        const res = await fetch(`${process.env.NEXTAUTH_URL}/api/auth/callback/credentials`, {
+          method: 'POST',
+          body: JSON.stringify(credentials),
+          headers: { 'Content-Type': 'application/json' }
+        })
+        const user = await res.json()
+
+        if (res.ok && user) {
+          return user
+        } else {
+          return null
+        }
+      }
+    })
+  ]
 } satisfies NextAuthConfig
