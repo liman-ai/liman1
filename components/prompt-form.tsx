@@ -1,10 +1,23 @@
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
+import React from 'react'
+import { useEnterSubmit } from 'hooks/useEnterSubmit'
+import { useActions } from 'hooks/useActions'
+import { useUIState } from 'hooks/useUIState'
+import { nanoid } from 'nanoid'
+import { UserMessage } from 'components/UserMessage'
+import { Button, Textarea, Tooltip, TooltipTrigger, TooltipContent } from 'components/ui'
 
-export function PromptForm({ input, setInput }) {
+interface PromptFormProps {
+  input: string
+  setInput: (value: string) => void
+}
+
+export function PromptForm({ input, setInput }: PromptFormProps) {
   const { data: session } = useSession()
   const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
-  const inputRef = React.useRef(null)
+  const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
 
@@ -17,10 +30,10 @@ export function PromptForm({ input, setInput }) {
   return (
     <form
       ref={formRef}
-      onSubmit={async (e) => {
+      onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (window.innerWidth < 600) {
-          e.target['message']?.blur()
+          e.currentTarget['message']?.blur()
         }
         const value = input.trim()
         setInput('')
