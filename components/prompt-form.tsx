@@ -1,9 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import { useSession } from 'next-auth/react'  // Oturum kontrolü için eklendi
-
 import Textarea from 'react-textarea-autosize'
+import { useSession } from 'next-auth/react'
 
 import { useActions, useUIState } from 'ai/rsc'
 
@@ -20,7 +19,6 @@ import { useEnterSubmit } from '@/lib/hooks/use-enter-submit'
 import { nanoid } from 'nanoid'
 import { useRouter } from 'next/navigation'
 
-
 export function PromptForm({
   input,
   setInput
@@ -28,13 +26,12 @@ export function PromptForm({
   input: string
   setInput: (value: string) => void
 }) {
-  const { data: session } = useSession()  // Bu satır eklendi
+  const { data: session, status } = useSession()  // Oturum kontrolü için eklendi
   const router = useRouter()
   const { formRef, onKeyDown } = useEnterSubmit()
   const inputRef = React.useRef<HTMLTextAreaElement>(null)
   const { submitUserMessage } = useActions()
   const [_, setMessages] = useUIState<typeof AI>()
-
 
   React.useEffect(() => {
     if (inputRef.current) {
@@ -42,22 +39,25 @@ export function PromptForm({
     }
   }, [])
 
+  // Oturum durumu yüklenene kadar bekle
+  if (status === 'loading') {
+    return <div>Loading...</div>
+  }
+
   return (
     <form
       ref={formRef}
-      onSubmit={async (e: any) => {
+      onSubmit={async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
 
-        // Blur focus on mobile
         if (window.innerWidth < 600) {
-          e.target['message']?.blur()
+          e.currentTarget['message']?.blur()
         }
 
         const value = input.trim()
         setInput('')
         if (!value) return
 
-        // Optimistically add user message UI
         setMessages(currentMessages => [
           ...currentMessages,
           {
@@ -66,7 +66,6 @@ export function PromptForm({
           }
         ])
 
-        // Submit and get response message
         const responseMessage = await submitUserMessage(value)
         setMessages(currentMessages => [...currentMessages, responseMessage])
       }}
@@ -107,7 +106,7 @@ export function PromptForm({
         <div className="absolute right-0 top-[13px] sm:right-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button type="submit" size="icon" disabled={input === ''}>
+              <Button type="submit" size="icon" disabled={!session || input === ''}>
                 <IconArrowElbow />
                 <span className="sr-only">Send message</span>
               </Button>
