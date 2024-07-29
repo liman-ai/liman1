@@ -1,10 +1,12 @@
+
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { authOptions } from './auth.config';
+import { authConfig } from './auth.config';
 import { z } from 'zod';
 import { getStringFromBuffer } from './lib/utils';
 import { getUser } from './app/login/actions';
 import { readAllowedEmails, readBlacklist } from './lib/jsonUtils';
+
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -17,11 +19,10 @@ async function fetchJsonData() {
   return data;
 }
 
-export default NextAuth({
-  ...authOptions,
-  secret: process.env.JWT_SECRET,
+export const { auth, signIn, signOut } = NextAuth({
+  ...authConfig,
+  secret: process.env.JWT_SECRET, // Bu satırı buraya taşıyın
   providers: [
-    ...authOptions.providers,
     Credentials({
       async authorize(credentials) {
         const parsedCredentials = z
@@ -69,7 +70,6 @@ export default NextAuth({
     })
   ],
   callbacks: {
-    ...authOptions.callbacks,
     async session({ session, token }) {
       // JSON verilerini API route'dan çekin
       const { blacklist } = await fetchJsonData();
